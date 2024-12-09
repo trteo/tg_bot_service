@@ -6,8 +6,11 @@ WORKDIR /app
 
 COPY . .
 
-# Run the 'ls' command during the build stage
 RUN ls -al
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run the 'ls' command during the build stage
 
 RUN which python
 RUN python -V
