@@ -1,39 +1,58 @@
-# Sample Data
-PRODUCTS = {
-    "Electronics": ["Laptop", "Smartphone", "Headphones", "Camera"],
-    "Clothing": ["T-shirt", "Jeans", "Jacket", "Sneakers"],
-    "Groceries": ["Milk", "Eggs", "Bread", "Fruits"],
-    "Groceries2": ["Milk", "Eggs", "Bread", "Fruits"],
-    "Groceries3": ["Milk", "Eggs", "Bread", "Fruits"],
-    "Groceries4": ["Milk", "Eggs", "Bread", "Fruits"],
-}
+from loguru import logger
+from sqlalchemy import select
 
-SUBCATEGORIES = {
-    "Electronics": {
-        "Laptops": ["MacBook", "Dell XPS", "Lenovo ThinkPad"],
-        "Phones": ["iPhone", "Samsung Galaxy", "Google Pixel"]
-    },
-    "Clothing": {
-        "Men": ["Shirt", "Trousers", "Blazer"],
-        "Women": ["Dress", "Skirt", "Blouse"]
-    }
-}
+from bot.db.models import ProductCategory, Product
+from bot.db.session import async_session
 
 
-# Getters catalogs
 async def get_categories(dialog_manager, **kwargs):
-    return {"CATEGORIES": list(PRODUCTS.keys())}
+    """Fetch all top-level categories."""
+    async with async_session() as session:
+        return {"CATEGORIES": [
+            {'id': product_category.id, 'name': product_category.name}
+            for product_category in (await session.scalars(
+                select(ProductCategory).filter(ProductCategory.parent_category_id.is_(None))
+            )).all()
+        ]}
 
 
 async def get_subcategories(dialog_manager, **kwargs):
-    category = dialog_manager.current_context().dialog_data.get("selected_category", "")
-    return {"SUBCATEGORIES": list(SUBCATEGORIES.get(category, {}).keys())}
+    """Fetch all subcategories for a given category."""
+    category_id = int(dialog_manager.current_context().dialog_data.get("selected_category", ""))
+    logger.info(f'Selected category_id: {category_id}')
+
+    async with async_session() as session:
+        return {"SUBCATEGORIES": [
+            {'id': product_subcategory.id, 'name': product_subcategory.name}
+            for product_subcategory in (await session.scalars(
+                select(ProductCategory).filter(ProductCategory.parent_category_id == category_id)))
+            .all()
+        ]}
 
 
 async def get_items(dialog_manager, **kwargs):
-    subcategory = dialog_manager.current_context().dialog_data.get("selected_subcategory", "")
-    return {
-        "ITEMS": SUBCATEGORIES.get(
-            dialog_manager.current_context().dialog_data["selected_category"], {}
-        ).get(subcategory, [])
-    }
+    """Fetch all products for a given subcategory."""
+    subcategory_id = int(dialog_manager.current_context().dialog_data.get("selected_subcategory", ""))
+    logger.info(f'Selected subcategory_id: {subcategory_id}')
+
+    async with async_session() as session:
+        return {"ITEMS": [
+            {'id': item.id, 'name': item.name}
+            for item in (await session.scalars(
+                select(Product).filter(Product.category_id == subcategory_id)))
+            .all()
+        ]}
+
+
+async def get_item(dialog_manager, **kwargs):
+    """Fetch products by id."""
+    product_id = int(dialog_manager.current_context().dialog_data.get("selected_product", ""))
+    logger.info(f'Selected product_id: {product_id}')
+
+    async with async_session() as session:
+        return {"ITEMS": [
+            {'id': item.id, 'name': item.name}
+            for item in (await session.scalars(
+                select(Product).filter(Product.id == product_id)))
+            .all()
+        ]}

@@ -50,7 +50,7 @@ async def on_item_selected(
         dialog_manager: DialogManager,
         selected: str
 ):
-    await event.message.answer(f"You selected: {selected}")
+    await event.message.answer(f"You selected: product with id: {selected}")
     await event.answer()
 
 

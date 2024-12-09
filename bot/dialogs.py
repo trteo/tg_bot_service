@@ -46,10 +46,10 @@ catalog_dialog = Dialog(
         Const("Select a category:"),
         ScrollingGroup(
             Select(
-                Format("{item}"),
+                Format("{item[name]}"),
                 id="categories",
                 items="CATEGORIES",
-                item_id_getter=lambda item: item,
+                item_id_getter=lambda item: item.get('id'),
                 on_click=handlers.on_category_selected,
             ),
             width=1,
@@ -63,10 +63,10 @@ catalog_dialog = Dialog(
         Const("Select a subcategory:"),
         ScrollingGroup(
             Select(
-                Format("{item}"),
+                Format("{item[name]}"),
                 id="subcategories",
                 items="SUBCATEGORIES",
-                item_id_getter=lambda item: item,
+                item_id_getter=lambda item: item.get('id'),
                 on_click=handlers.on_subcategory_selected,
             ),
             width=1,
@@ -80,10 +80,10 @@ catalog_dialog = Dialog(
         Const("Select an item:"),
         ScrollingGroup(
             Select(
-                Format("{item}"),
+                Format("{item[name]}"),
                 id="items",
                 items="ITEMS",
-                item_id_getter=lambda item: item,
+                item_id_getter=lambda item: item.get('id'),
                 on_click=handlers.on_item_selected,
             ),
             width=1,
