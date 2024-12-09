@@ -13,7 +13,6 @@ class ProductCategory(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
     parent_category_id = Column(Integer, nullable=True)
-    # subcategories = relationship("ProductCategory", backref="parent", remote_side=[id])
 
 
 class Product(Base):
@@ -24,4 +23,3 @@ class Product(Base):
     image = Column(String(255), nullable=True)
     price = Column(DECIMAL(10, 2), nullable=False)
     category_id = Column(Integer, nullable=False)
-    # category_id = Column(Integer, ForeignKey('product_categories.id'), nullable=False)

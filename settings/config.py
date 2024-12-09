@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = ''
     POSTGRES_PORT: str = ''
 
+    SUBSCRIBE_GROUP_ID: str = ''
+    SUBSCRIBE_CHANNEL_ID: str = ''
+
+    SUBSCRIBE_GROUP_LINK: str = ''
+    SUBSCRIBE_CHANNEL_LINK: str = ''
+
     class Config:
         env_file = Path(BASE_DIR, 'settings', 'env')
 
