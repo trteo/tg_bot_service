@@ -5,7 +5,7 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram_dialog.setup import setup_dialogs
 
-from bot.dialogs import setup_start_handlers, setup_catalog_handlers
+from bot.dialogs import setup_start_handlers, setup_catalog_handlers, setup_faq_handlers
 
 BOT_TOKEN = "7798934875:AAFonPBFbsx7sPmLrs4GuPcMhzLu8H0B01E"
 
@@ -21,6 +21,7 @@ def main():
     # Register all handlers
     setup_start_handlers(dp)
     setup_catalog_handlers(dp)
+    setup_faq_handlers(dp)
 
     setup_dialogs(dp)
     dp.run_polling(bot)

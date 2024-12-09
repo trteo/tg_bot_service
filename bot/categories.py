@@ -20,7 +20,7 @@ SUBCATEGORIES = {
 }
 
 
-# Getters
+# Getters catalogs
 async def get_categories(dialog_manager, **kwargs):
     return {"CATEGORIES": list(PRODUCTS.keys())}
 
@@ -32,4 +32,8 @@ async def get_subcategories(dialog_manager, **kwargs):
 
 async def get_items(dialog_manager, **kwargs):
     subcategory = dialog_manager.current_context().dialog_data.get("selected_subcategory", "")
-    return {"ITEMS": SUBCATEGORIES.get(dialog_manager.current_context().dialog_data["selected_category"], {}).get(subcategory, [])}
+    return {
+        "ITEMS": SUBCATEGORIES.get(
+            dialog_manager.current_context().dialog_data["selected_category"], {}
+        ).get(subcategory, [])
+    }

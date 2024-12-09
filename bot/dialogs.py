@@ -9,9 +9,10 @@ from aiogram_dialog.widgets.text import Format
 from loguru import logger
 
 from bot import handlers
-from bot.db import get_subcategories, get_categories, get_items
+from bot.categories import get_subcategories, get_categories, get_items
+from bot.faq import get_faq_categories, get_questions, get_answer
 from bot.middleware import SubscriptionMiddleware
-from bot.states import StartStates, CatalogStates
+from bot.states import StartStates, CatalogStates, FAQStates
 
 # Start
 start_dialog = Dialog(
@@ -82,6 +83,49 @@ catalog_dialog = Dialog(
     ),
 )
 
+# FAQ
+faq_dialog = Dialog(
+    Window(
+        Const("📂 Select a FAQ category:"),
+        ScrollingGroup(
+            Select(
+                Format("{item}"),
+                id="categories",
+                items="CATEGORIES",
+                item_id_getter=lambda item: item,
+                on_click=handlers.on_faq_category_selected,
+            ),
+            width=1,
+            height=5,
+            id="faq_category_scroll",
+        ),
+        getter=get_faq_categories,
+        state=FAQStates.CATEGORY,
+    ),
+    Window(
+        Const("❓ Select a question:"),
+        ScrollingGroup(
+            Select(
+                Format("{item}"),
+                id="questions",
+                items="QUESTIONS",
+                item_id_getter=lambda item: item,
+                on_click=handlers.on_question_selected,
+            ),
+            width=1,
+            height=5,
+            id="faq_question_scroll",
+        ),
+        getter=get_questions,
+        state=FAQStates.QUESTION,
+    ),
+    Window(
+        Format("💡 Answer: {ANSWER}"),
+        state=FAQStates.ANSWER,
+        getter=get_answer,
+    ),
+)
+
 
 def setup_start_handlers(dp: Dispatcher):
     @dp.message(Command('start'))
@@ -95,3 +139,7 @@ def setup_start_handlers(dp: Dispatcher):
 
 def setup_catalog_handlers(dp: Dispatcher):
     dp.include_router(catalog_dialog)
+
+
+def setup_faq_handlers(dp: Dispatcher):
+    dp.include_router(faq_dialog)

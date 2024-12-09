@@ -2,11 +2,28 @@ from aiogram import types
 from aiogram_dialog import StartMode, DialogManager
 from aiogram_dialog.widgets.kbd import Select
 
-from bot.states import CatalogStates
+from bot.states import CatalogStates, FAQStates
 
 
-# Handlers
-# async def on_category_selected(event: types.CallbackQuery, widget, dialog_manager):
+# Start routing
+async def on_catalog(event: types.CallbackQuery, widget, dialog_manager):
+    await event.message.answer("Opening Catalog...")
+    await event.answer()
+    await dialog_manager.start(CatalogStates.CATEGORY, mode=StartMode.NEW_STACK)
+
+
+async def on_cart(event: types.CallbackQuery, widget, dialog_manager):
+    await event.message.answer("Opening Cart...")
+    await event.answer()
+
+
+async def on_faq(event: types.CallbackQuery, widget, dialog_manager):
+    await event.message.answer("Opening FAQ...")
+    await event.answer()
+    await dialog_manager.start(FAQStates.CATEGORY, mode=StartMode.NEW_STACK)
+
+
+# Category routing
 async def on_category_selected(
         event: types.CallbackQuery,
         widget: Select,
@@ -33,22 +50,26 @@ async def on_item_selected(
         dialog_manager: DialogManager,
         selected: str
 ):
-    await event.message.answer(f"You selected: {widget.widget_id}")
+    await event.message.answer(f"You selected: {selected}")
     await event.answer()
 
 
-# Handlers
-async def on_catalog(event: types.CallbackQuery, widget, dialog_manager):
-    await event.message.answer("Opening Catalog...")
-    await event.answer()
-    await dialog_manager.start(CatalogStates.CATEGORY, mode=StartMode.NEW_STACK)
+# FAQ routing
+async def on_faq_category_selected(
+        event: types.CallbackQuery,
+        widget: Select,
+        dialog_manager: DialogManager,
+        selected: str
+):
+    dialog_manager.current_context().dialog_data["selected_faq_category"] = selected
+    await dialog_manager.switch_to(FAQStates.QUESTION)
 
 
-async def on_cart(event: types.CallbackQuery, widget, dialog_manager):
-    await event.message.answer("Opening Cart...")
-    await event.answer()
-
-
-async def on_faq(event: types.CallbackQuery, widget, dialog_manager):
-    await event.message.answer("Opening FAQ...")
-    await event.answer()
+async def on_question_selected(
+        event: types.CallbackQuery,
+        widget: Select,
+        dialog_manager: DialogManager,
+        selected: str
+):
+    dialog_manager.current_context().dialog_data["selected_question"] = selected
+    await dialog_manager.switch_to(FAQStates.ANSWER)

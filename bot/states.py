@@ -12,3 +12,9 @@ class CatalogStates(StatesGroup):
 class StartStates(StatesGroup):
     MAIN = State()
 
+
+# Dialog States
+class FAQStates(StatesGroup):
+    CATEGORY = State()
+    QUESTION = State()
+    ANSWER = State()
