@@ -56,6 +56,11 @@ catalog_dialog = Dialog(
             height=3,
             id="category_scroll",
         ),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.start(StartStates.MAIN, mode=StartMode.RESET_STACK),
+        )),
         getter=get_categories,
         state=CatalogStates.CATEGORY,
     ),
@@ -73,6 +78,11 @@ catalog_dialog = Dialog(
             height=3,
             id="subcategory_scroll",
         ),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.switch_to(CatalogStates.CATEGORY),
+        )),
         getter=get_subcategories,
         state=CatalogStates.SUBCATEGORY,
     ),
@@ -90,9 +100,36 @@ catalog_dialog = Dialog(
             height=3,
             id="item_scroll",
         ),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.switch_to(CatalogStates.SUBCATEGORY),
+        )),
         getter=get_items,
         state=CatalogStates.ITEM,
     ),
+    # Window(
+    #     Const("Item info:"),
+    #     ScrollingGroup(
+    #         Select(
+    #             Format("{item[name]}"),
+    #             id="items",
+    #             items="ITEMS",
+    #             item_id_getter=lambda item: item.get('id'),
+    #             on_click=handlers.on_item_selected,
+    #         ),
+    #         width=1,
+    #         height=3,
+    #         id="item_scroll",
+    #     ),
+    #     Row(Button(
+    #         Const("⬅️ Back"),
+    #         id="back_to_categories",
+    #         on_click=lambda c, d, m: m.start(CatalogStates.SUBCATEGORY, mode=StartMode.RESET_STACK),
+    #     )),
+    #     getter=get_items,
+    #     state=CatalogStates.ITEM,
+    # ),
 )
 
 # FAQ
