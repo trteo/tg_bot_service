@@ -15,6 +15,6 @@ class StartStates(StatesGroup):
 
 # Dialog States
 class FAQStates(StatesGroup):
-    CATEGORY = State()
+    FAQ_CATEGORY = State()
     QUESTION = State()
     ANSWER = State()

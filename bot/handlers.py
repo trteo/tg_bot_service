@@ -9,7 +9,7 @@ from bot.states import CatalogStates, FAQStates
 async def on_catalog(event: types.CallbackQuery, widget, dialog_manager):
     await event.message.answer("Opening Catalog...")
     await event.answer()
-    await dialog_manager.start(CatalogStates.CATEGORY, mode=StartMode.NEW_STACK)
+    await dialog_manager.start(CatalogStates.CATEGORY, mode=StartMode.RESET_STACK)
 
 
 async def on_cart(event: types.CallbackQuery, widget, dialog_manager):
@@ -20,7 +20,7 @@ async def on_cart(event: types.CallbackQuery, widget, dialog_manager):
 async def on_faq(event: types.CallbackQuery, widget, dialog_manager):
     await event.message.answer("Opening FAQ...")
     await event.answer()
-    await dialog_manager.start(FAQStates.CATEGORY, mode=StartMode.NEW_STACK)
+    await dialog_manager.start(FAQStates.FAQ_CATEGORY, mode=StartMode.RESET_STACK)
 
 
 # Category routing

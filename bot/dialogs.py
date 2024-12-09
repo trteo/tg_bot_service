@@ -19,9 +19,21 @@ start_dialog = Dialog(
     Window(
         Const('Welcome to the bot! Choose an option:'),
         Row(
-            Button(Const("'🛒 Catalog'"), id='catalog', on_click=handlers.on_catalog),
-            Button(Const("'🛍️ Cart'"), id='cart', on_click=handlers.on_cart),
-            Button(Const("'❓ FAQ'"), id='faq', on_click=handlers.on_faq),
+            Button(
+                Const("'🛒 Catalog'"),
+                id='catalog',
+                on_click=lambda c, d, m: m.start(CatalogStates.CATEGORY, mode=StartMode.RESET_STACK)
+            ),
+            Button(
+                Const("'🛍️ Cart'"),
+                id='cart',
+                on_click=handlers.on_cart
+            ),
+            Button(
+                Const("'❓ FAQ'"),
+                id='faq',
+                on_click=lambda c, d, m: m.start(FAQStates.FAQ_CATEGORY, mode=StartMode.RESET_STACK)
+            ),
         ),
         state=StartStates.MAIN,
     )
@@ -99,8 +111,13 @@ faq_dialog = Dialog(
             height=5,
             id="faq_category_scroll",
         ),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
+        )),
         getter=get_faq_categories,
-        state=FAQStates.CATEGORY,
+        state=FAQStates.FAQ_CATEGORY,
     ),
     Window(
         Const("❓ Select a question:"),
@@ -116,11 +133,21 @@ faq_dialog = Dialog(
             height=5,
             id="faq_question_scroll",
         ),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.switch_to(FAQStates.FAQ_CATEGORY)
+        )),
         getter=get_questions,
         state=FAQStates.QUESTION,
     ),
     Window(
         Format("💡 Answer: {ANSWER}"),
+        Row(Button(
+            Const("⬅️ Back"),
+            id="back_to_questions",
+            on_click=lambda c, d, m: m.switch_to(FAQStates.QUESTION)
+        )),
         state=FAQStates.ANSWER,
         getter=get_answer,
     ),
