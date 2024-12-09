@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,7 +10,7 @@ class Settings(BaseSettings):
     DEV: bool = False
 
     POSTGRES_USER: str = ''
-    POSTGRES_PASSWORD: str = ''
+    POSTGRES_PASSWORD: SecretStr = ''
     POSTGRES_DATABASE: str = ''
     POSTGRES_HOST: str = ''
     POSTGRES_PORT: str = ''
@@ -19,6 +20,8 @@ class Settings(BaseSettings):
 
     SUBSCRIBE_GROUP_LINK: str = ''
     SUBSCRIBE_CHANNEL_LINK: str = ''
+
+    BOT_TOKEN: SecretStr = ''
 
     class Config:
         env_file = Path(BASE_DIR, 'settings', 'env')
