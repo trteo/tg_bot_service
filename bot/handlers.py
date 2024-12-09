@@ -5,22 +5,10 @@ from aiogram_dialog.widgets.kbd import Select
 from bot.states import CatalogStates, FAQStates
 
 
-# Start routing
-async def on_catalog(event: types.CallbackQuery, widget, dialog_manager):
-    await event.message.answer("Opening Catalog...")
-    await event.answer()
-    await dialog_manager.start(CatalogStates.CATEGORY, mode=StartMode.RESET_STACK)
-
-
+# Start on-click routs
 async def on_cart(event: types.CallbackQuery, widget, dialog_manager):
     await event.message.answer("Opening Cart...")
     await event.answer()
-
-
-async def on_faq(event: types.CallbackQuery, widget, dialog_manager):
-    await event.message.answer("Opening FAQ...")
-    await event.answer()
-    await dialog_manager.start(FAQStates.FAQ_CATEGORY, mode=StartMode.RESET_STACK)
 
 
 # Category routing
@@ -49,7 +37,7 @@ async def on_item_selected(
         widget: Select,
         dialog_manager: DialogManager,
         selected: str
-):
+):  # TODO create windows with info about product
     await event.message.answer(f"You selected: product with id: {selected}")
     await event.answer()
 
