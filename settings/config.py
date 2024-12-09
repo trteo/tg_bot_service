@@ -32,7 +32,7 @@ settings = Settings()
 
 def get_db_url(db_name: str = settings.POSTGRES_DATABASE) -> str:
     return (
-        f'postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@'
+        f'postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD.get_secret_value()}@'
         f'{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{db_name}'
     )
 

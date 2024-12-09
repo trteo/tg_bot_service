@@ -6,8 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram_dialog.setup import setup_dialogs
 
 from bot.dialogs import setup_start_handlers, setup_catalog_handlers, setup_faq_handlers
-
-BOT_TOKEN = "7798934875:AAFonPBFbsx7sPmLrs4GuPcMhzLu8H0B01E"
+from settings.config import settings
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 def main():
     # Initialize bot and dispatcher
     storage = MemoryStorage()
-    bot = Bot(token=BOT_TOKEN)
+    bot = Bot(token=settings.BOT_TOKEN.get_secret_value())
     dp = Dispatcher(storage=storage)
 
     # Register all handlers
