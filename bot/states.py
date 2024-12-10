@@ -5,6 +5,7 @@ class CatalogStates(StatesGroup):
     CATEGORY = State()
     SUBCATEGORY = State()
     ITEM = State()
+    PRODUCT_DETAILS = State()
 
 
 class StartStates(StatesGroup):

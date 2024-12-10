@@ -1,7 +1,9 @@
 from aiogram import types
 from aiogram_dialog import StartMode, DialogManager
-from aiogram_dialog.widgets.kbd import Select
+from aiogram_dialog.widgets.kbd import Select, Button
 
+from bot.db.models import CartProducts
+from bot.db.session import async_session
 from bot.states import CatalogStates, FAQStates
 
 
@@ -40,6 +42,8 @@ async def on_item_selected(
 ):  # TODO create windows with info about product
     await event.message.answer(f"You selected: product with id: {selected}")
     await event.answer()
+    dialog_manager.current_context().dialog_data["product_id"] = selected
+    await dialog_manager.switch_to(CatalogStates.PRODUCT_DETAILS)
 
 
 # FAQ routing
@@ -61,3 +65,24 @@ async def on_question_selected(
 ):
     dialog_manager.current_context().dialog_data["selected_question"] = selected
     await dialog_manager.switch_to(FAQStates.ANSWER)
+
+
+# Cart
+async def on_add_to_cart(
+        event: types.CallbackQuery,
+        widget: Button,
+        dialog_manager: DialogManager,
+        # selected: str
+):
+    user_id = event.from_user.id
+    product_id = dialog_manager.current_context().dialog_data["product_id"]
+    amount = dialog_manager.current_context().widget_data["amount"]
+
+    # TODO check if item already in cart
+    async with async_session() as session:
+        session.add(CartProducts(client_id=int(user_id), product_id=int(product_id), amount=int(amount)))
+        await session.commit()
+
+    await event.message.answer(f"Product {product_id} added to cart (Quantity: {amount}).")
+    await event.answer()
+    await dialog_manager.switch_to(CatalogStates.ITEM)

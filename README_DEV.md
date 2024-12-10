@@ -17,3 +17,6 @@ docker run -it bot
 * Запустить
 
 
+
+POSTGRES_HOST=gateway.docker.internal
+POSTGRES_HOST=localhost

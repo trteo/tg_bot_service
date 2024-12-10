@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy import Text, DECIMAL
 from sqlalchemy.orm import DeclarativeBase, relationship
 
@@ -23,3 +23,17 @@ class Product(Base):
     image = Column(String(255), nullable=True)
     price = Column(DECIMAL(10, 2), nullable=False)
     category_id = Column(Integer, nullable=False)
+
+
+class Client(Base):
+    __tablename__ = 'clients'
+    chat_id = Column(Integer, primary_key=True, autoincrement=True)
+    is_active = Column(Boolean, default=True)
+
+
+class CartProducts(Base):
+    __tablename__ = 'products_in_cart'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    amount = Column(Integer, nullable=False)
+    client_id = Column(Integer, ForeignKey('clients.chat_id'), nullable=False)
+    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
