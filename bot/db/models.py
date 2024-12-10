@@ -37,3 +37,10 @@ class CartProducts(Base):
     amount = Column(Integer, nullable=False)
     client_id = Column(Integer, ForeignKey('clients.chat_id'), nullable=False)
     product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
+
+
+class FAQ(Base):
+    __tablename__ = 'faq'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    question = Column(Text, nullable=True)
+    answer = Column(Text, nullable=True)

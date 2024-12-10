@@ -11,7 +11,7 @@ from loguru import logger
 from bot import handlers
 from bot.cart import get_product_details
 from bot.categories import get_subcategories, get_categories, get_items
-from bot.faq import get_faq_categories, get_questions, get_answer
+from bot.faq import get_questions, get_answer
 from bot.middleware import SubscriptionMiddleware
 from bot.states import StartStates, CatalogStates, FAQStates
 
@@ -33,7 +33,8 @@ start_dialog = Dialog(
             Button(
                 Const("'❓ FAQ'"),
                 id='faq',
-                on_click=lambda c, d, m: m.start(FAQStates.FAQ_CATEGORY, mode=StartMode.RESET_STACK)
+                # on_click=lambda c, d, m: m.start(FAQStates.FAQ_CATEGORY, mode=StartMode.RESET_STACK)
+                on_click=lambda c, d, m: m.start(FAQStates.QUESTION, mode=StartMode.RESET_STACK)
             ),
         ),
         state=StartStates.MAIN,
@@ -137,35 +138,13 @@ catalog_dialog = Dialog(
 # FAQ
 faq_dialog = Dialog(
     Window(
-        Const("📂 Select a FAQ category:"),
-        ScrollingGroup(
-            Select(
-                Format("{item}"),
-                id="categories",
-                items="CATEGORIES",
-                item_id_getter=lambda item: item,
-                on_click=handlers.on_faq_category_selected,
-            ),
-            width=1,
-            height=5,
-            id="faq_category_scroll",
-        ),
-        Row(Button(
-            Const("⬅️ Back"),
-            id="back_to_categories",
-            on_click=lambda c, d, m: m.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
-        )),
-        getter=get_faq_categories,
-        state=FAQStates.FAQ_CATEGORY,
-    ),
-    Window(
         Const("❓ Select a question:"),
         ScrollingGroup(
             Select(
-                Format("{item}"),
+                Format("{item[question]}"),
                 id="questions",
                 items="QUESTIONS",
-                item_id_getter=lambda item: item,
+                item_id_getter=lambda item: item.get('id'),
                 on_click=handlers.on_question_selected,
             ),
             width=1,
@@ -175,13 +154,13 @@ faq_dialog = Dialog(
         Row(Button(
             Const("⬅️ Back"),
             id="back_to_categories",
-            on_click=lambda c, d, m: m.switch_to(FAQStates.FAQ_CATEGORY)
+            on_click=lambda c, d, m: m.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
         )),
         getter=get_questions,
         state=FAQStates.QUESTION,
     ),
     Window(
-        Format("💡 Answer: {ANSWER}"),
+        Format("💡 {ANSWER}"),
         Row(Button(
             Const("⬅️ Back"),
             id="back_to_questions",

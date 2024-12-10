@@ -13,6 +13,5 @@ class StartStates(StatesGroup):
 
 
 class FAQStates(StatesGroup):
-    FAQ_CATEGORY = State()
     QUESTION = State()
     ANSWER = State()

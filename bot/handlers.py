@@ -1,8 +1,9 @@
 from aiogram import types
 from aiogram_dialog import StartMode, DialogManager
 from aiogram_dialog.widgets.kbd import Select, Button
+from sqlalchemy import select
 
-from bot.db.models import CartProducts
+from bot.db.models import CartProducts, Product
 from bot.db.session import async_session
 from bot.states import CatalogStates, FAQStates
 
@@ -39,9 +40,7 @@ async def on_item_selected(
         widget: Select,
         dialog_manager: DialogManager,
         selected: str
-):  # TODO create windows with info about product
-    await event.message.answer(f"You selected: product with id: {selected}")
-    await event.answer()
+):  # TODO send images
     dialog_manager.current_context().dialog_data["product_id"] = selected
     await dialog_manager.switch_to(CatalogStates.PRODUCT_DETAILS)
 
@@ -63,7 +62,7 @@ async def on_question_selected(
         dialog_manager: DialogManager,
         selected: str
 ):
-    dialog_manager.current_context().dialog_data["selected_question"] = selected
+    dialog_manager.current_context().dialog_data["question_id"] = selected
     await dialog_manager.switch_to(FAQStates.ANSWER)
 
 
@@ -78,11 +77,29 @@ async def on_add_to_cart(
     product_id = dialog_manager.current_context().dialog_data["product_id"]
     amount = dialog_manager.current_context().widget_data["amount"]
 
-    # TODO check if item already in cart
     async with async_session() as session:
-        session.add(CartProducts(client_id=int(user_id), product_id=int(product_id), amount=int(amount)))
-        await session.commit()
+        existing_cart_item = await session.execute(
+            select(CartProducts).where(
+                CartProducts.client_id == int(user_id),
+                CartProducts.product_id == int(product_id)
+            )
+        )
+        existing_cart_item = existing_cart_item.scalars().first()
 
-    await event.message.answer(f"Product {product_id} added to cart (Quantity: {amount}).")
+        if existing_cart_item:
+            existing_cart_item.amount += int(amount)
+            await session.commit()
+            await event.message.answer(
+                f"Product already in cart. Updated quantity: {existing_cart_item.amount}."
+            )
+        else:
+            session.add(
+                CartProducts(client_id=int(user_id), product_id=int(product_id), amount=int(amount))
+            )
+            await session.commit()
+            await event.message.answer(
+                f"Product added to cart (Quantity: {amount})."
+            )
+
     await event.answer()
     await dialog_manager.switch_to(CatalogStates.ITEM)
