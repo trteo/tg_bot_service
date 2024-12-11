@@ -1,5 +1,7 @@
+from aiogram.enums import ContentType
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
+from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog.widgets.kbd import Button, Select
 from loguru import logger
 from sqlalchemy import select
@@ -74,7 +76,7 @@ async def get_item(dialog_manager: DialogManager, **kwargs):
         ]}
 
 
-async def get_product_by_id(product_id: str):
+async def get_product_by_id(product_id: str) -> Product:
     """Fetch a product by its ID."""
     async with async_session() as session:
         return (
@@ -90,7 +92,9 @@ async def get_product_details(dialog_manager: DialogManager, **kwargs) -> dict:
             f"Name: {product.name}\n"
             f"Description: {product.description}\n"
             f"Price: {product.price}\n"
-        )
+        ),
+        # "image_url": MediaAttachment(ContentType.PHOTO, url="https://aiogram-dialog.readthedocs.io/en/stable/_images/static_media.png")
+        # "image_url": "/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"
     }
     logger.info(f'Product details: {res}')
     return res

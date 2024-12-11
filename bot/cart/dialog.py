@@ -1,7 +1,9 @@
 from aiogram import F
+from aiogram.enums import ContentType
 from aiogram_dialog import Dialog, Window, StartMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Row, Button
+from aiogram_dialog.widgets.media import StaticMedia
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog.widgets.text import Format
 
@@ -18,6 +20,10 @@ cart_dialog = Dialog(
             'Cart is empty now.',
             when=F["cart_empty"],
         ),
+        # StaticMedia(
+        #     path="/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png",
+        #     type=ContentType.PHOTO,
+        # ),
         Format(
             "🛒 **Item {index}/{total_items}**\n\n"
             "🔹 **Name:** {item[name]}\n"

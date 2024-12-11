@@ -1,6 +1,9 @@
+from aiogram.enums import ContentType
 from aiogram_dialog import Dialog, Window, StartMode
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Row, Button, Counter
 from aiogram_dialog.widgets.kbd import ScrollingGroup, Select
+from aiogram_dialog.widgets.media import StaticMedia, DynamicMedia
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog.widgets.text import Format
 
@@ -76,6 +79,12 @@ catalog_dialog = Dialog(
         state=CatalogStates.ITEM,
     ),
     Window(
+        # StaticMedia(
+        #     path="{image_url}",
+        #     # path="/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png",
+        #     type=ContentType.PHOTO,
+        # ),
+        # DynamicMedia("image_url"),
         Format("{product_details}"),
         Counter(
             id="amount",
