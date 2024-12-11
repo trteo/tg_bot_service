@@ -25,7 +25,7 @@ def get_striped_sentence(sentence: str, max_len: int = 32) -> str:
     return truncated[:last_space_index] + "..."
 
 
-async def get_questions(dialog_manager: DialogManager, **kwargs):
+async def get_questions(dialog_manager: DialogManager, **kwargs) -> dict:
     async with async_session() as session:
         faq_db_list = (await session.scalars(select(FAQ))).all()
 
@@ -39,7 +39,7 @@ async def get_questions(dialog_manager: DialogManager, **kwargs):
     return {"QUESTIONS": questions}
 
 
-async def get_answer(dialog_manager: DialogManager, **kwargs):
+async def get_answer(dialog_manager: DialogManager, **kwargs) -> dict:
     question = dialog_manager.current_context().dialog_data["question_id"]
     response = 'No answer found.'
     async with async_session() as session:
