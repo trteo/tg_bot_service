@@ -1,4 +1,7 @@
-from aiogram.types import CallbackQuery
+import hashlib
+
+from aiogram.types import CallbackQuery, InlineQuery
+from aiogram.types import InlineQueryResultArticle, InputTextMessageContent
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select
 from loguru import logger
@@ -59,3 +62,38 @@ async def on_question_selected(
 ):
     dialog_manager.current_context().dialog_data["question_id"] = selected
     await dialog_manager.switch_to(FAQStates.ANSWER)
+
+
+async def get_matching_faqs(query: str, limit: int = 5):
+    async with async_session() as session:
+        return (await session.scalars(select(FAQ).filter(FAQ.question.ilike(f"%{query}%")).limit(limit))).all()
+
+
+async def process_inline_input(inline_query: InlineQuery):
+    query = inline_query.query.strip()
+    if not query:
+        return
+    logger.info(f'Inline query: {query}')
+
+    # Fetch matching questions
+    matching_faqs = await get_matching_faqs(query=query)
+
+    results = []
+    for faq in matching_faqs:
+        # Create unique ID for each inline result
+        unique_id = hashlib.md5(f"{faq.id}".encode()).hexdigest()
+
+        # Add each FAQ as an InlineQueryResultArticle
+        results.append(
+            InlineQueryResultArticle(
+                id=unique_id,
+                title=faq.question,
+                input_message_content=InputTextMessageContent(
+                    message_text=f"❓ *Question*: {faq.question}\n\n💡 *Answer*: {faq.answer}",
+                    parse_mode="Markdown"
+                )
+            )
+        )
+
+    # Send results to user
+    await inline_query.answer(results, cache_time=1)

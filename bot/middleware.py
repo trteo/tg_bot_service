@@ -3,7 +3,7 @@ from aiogram import BaseMiddleware, types
 from aiogram import Bot
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
-from aiogram.types import Update, TelegramObject
+from aiogram.types import Update, TelegramObject, InlineQuery
 from loguru import logger
 from sqlalchemy import select
 
@@ -32,7 +32,7 @@ class SubscriptionMiddleware(BaseMiddleware):
         user_id = event.event.from_user.id
 
         # Payment start
-        if event.pre_checkout_query:
+        if event.pre_checkout_query or isinstance(event.event, InlineQuery):
             return await handler(event, data)
 
         message = event.message or event.callback_query.message

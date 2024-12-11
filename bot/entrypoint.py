@@ -1,16 +1,16 @@
 from aiogram import Dispatcher, Bot
 from aiogram import F
 from aiogram.filters import Command
-from aiogram.types import Message, PreCheckoutQuery
+from aiogram.types import Message, PreCheckoutQuery, InlineQuery
 from aiogram_dialog import Dialog, Window, StartMode, DialogManager
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Const
-from loguru import logger
 
 from bot.cart.dialog import cart_dialog
 from bot.cart.handlers import receive_quantity, handle_payment
 from bot.catalog.dialog import catalog_dialog
 from bot.faq.dialog import faq_dialog
+from bot.faq.handlers import process_inline_input
 from bot.middleware import SubscriptionMiddleware
 from bot.states import StartStates, CatalogStates, FAQStates, CartStates
 
@@ -61,6 +61,10 @@ def setup_handlers(dp: Dispatcher):
     async def set_quantity_handler(message: Message, dialog_manager: DialogManager):
         if dialog_manager.dialog_data.get("waiting_for_quantity"):
             await receive_quantity(message=message, dialog_manager=dialog_manager)
+
+    @dp.inline_query()
+    async def faq_inline_handler(inline_query: InlineQuery):
+        await process_inline_input(inline_query=inline_query)
 
     dp.include_router(start_dialog)
     dp.include_router(catalog_dialog)
