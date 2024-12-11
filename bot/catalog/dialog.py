@@ -85,7 +85,9 @@ catalog_dialog = Dialog(
         #     type=ContentType.PHOTO,
         # ),
         # DynamicMedia("image_url"),
-        Format("{product_details}"),
+        Format("🔹 Name: {name}"),
+        Format("📖 Description: {description}"),
+        Format("💲 Price: {price}"),
         Counter(
             id="amount",
             min_value=1,

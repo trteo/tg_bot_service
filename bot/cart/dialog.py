@@ -26,10 +26,10 @@ cart_dialog = Dialog(
         # ),
         Format(
             "🛒 **Item {index}/{total_items}**\n\n"
-            "🔹 **Name:** {item[name]}\n"
-            "🔢 **Quantity:** {item[quantity]}\n"
-            "💲 **Price:** {item[price]:.2f}\n"
-            "💰 **Total:** {item[total]:.2f}",
+            "🔹 Name: {item[name]}\n"
+            "🔢 Quantity: {item[quantity]}\n"
+            "💲 Price: {item[price]:.2f}\n"
+            "💰 Total: {item[total]:.2f}",
             when=~F["cart_empty"],
         ),
         Row(

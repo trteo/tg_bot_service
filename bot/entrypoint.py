@@ -20,17 +20,17 @@ start_dialog = Dialog(
         Const('Welcome to the bot! Choose an option:'),
         Row(
             Button(
-                Const("'🛒 Catalog'"),
+                Const("🛒 Catalog"),
                 id='catalog',
                 on_click=lambda c, d, m: m.start(CatalogStates.CATEGORY, mode=StartMode.RESET_STACK)
             ),
             Button(
-                Const("'🛍️ Cart'"),
+                Const("🛍️ Cart"),
                 id='cart',
                 on_click=lambda c, d, m: m.start(CartStates.VIEW_CART, mode=StartMode.RESET_STACK)
             ),
             Button(
-                Const("'❓ FAQ'"),
+                Const("❓ FAQ"),
                 id='faq',
                 on_click=lambda c, d, m: m.start(FAQStates.QUESTION, mode=StartMode.RESET_STACK)
             ),

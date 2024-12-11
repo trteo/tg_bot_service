@@ -88,11 +88,9 @@ async def get_product_details(dialog_manager: DialogManager, **kwargs) -> dict:
     product_id = dialog_manager.current_context().dialog_data.get("product_id")
     product = await get_product_by_id(product_id)
     res = {
-        "product_details": (
-            f"Name: {product.name}\n"
-            f"Description: {product.description}\n"
-            f"Price: {product.price}\n"
-        ),
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
         # "image_url": MediaAttachment(ContentType.PHOTO, url="https://aiogram-dialog.readthedocs.io/en/stable/_images/static_media.png")
         # "image_url": "/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"
     }
