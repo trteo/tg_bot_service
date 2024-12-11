@@ -1,6 +1,7 @@
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select
+from loguru import logger
 from sqlalchemy import select
 
 from bot.db.models import FAQ
@@ -31,7 +32,7 @@ async def get_questions(dialog_manager: DialogManager, **kwargs):
             'question': get_striped_sentence(faq.question),
         } for faq in faq_db_list
     ]
-    print(questions)
+    logger.info(f"Questions: {questions}")
     return {"QUESTIONS": questions}
 
 

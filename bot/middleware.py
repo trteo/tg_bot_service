@@ -20,9 +20,9 @@ async def create_client_if_not_exists(chat_id):
             client = Client(chat_id=chat_id)
             session.add(client)
             await session.commit()
-            print(f"Client with chat_id {chat_id} created.")
+            logger.info(f"Client with chat_id {chat_id} created.")
         else:
-            print(f"Client with chat_id {chat_id} already exists.")
+            logger.info(f"Client with chat_id {chat_id} already exists.")
         return client
 
 

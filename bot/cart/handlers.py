@@ -148,7 +148,7 @@ async def receive_quantity(message: Message, dialog_manager: DialogManager):
 
 async def accept_delivery_address(message: Message, message_input: MessageInput, dialog_manager: DialogManager):
     address = message.text
-    print(f'Address: {address}')
+    logger.info(f'Address: {address}')
     dialog_manager.current_context().dialog_data["delivery_address"] = address
     # TODO create order
     await dialog_manager.switch_to(CartStates.ADDRESS_CONFIRM)
