@@ -120,6 +120,29 @@ async def on_set_quantity(callback: CallbackQuery, button: Button, dialog_manage
     dialog_manager.dialog_data["waiting_for_quantity"] = True
 
 
+async def receive_quantity(message: Message, dialog_manager: DialogManager):
+    dialog_manager.dialog_data["waiting_for_quantity"] = False
+
+    new_quantity = int(message.text)
+    cart_items = dialog_manager.dialog_data["cart_items"]
+    current_index = dialog_manager.dialog_data.get("index", 0)
+
+    if new_quantity <= 0:
+        removed_item = cart_items.pop(current_index)
+        await remove_item_from_cart_db(cart_product_id=removed_item.get('id'))
+        await message.answer("Item removed from the cart due to zero or negative quantity.")
+    else:
+        cart_items[current_index]["quantity"] = new_quantity
+        cart_items[current_index]["total"] = cart_items[current_index]["price"] * new_quantity
+        await set_item_in_cart_quantity_db(
+            cart_product_id=cart_items[current_index].get('id'),
+            quantity=new_quantity
+        )
+        await message.answer(f"Quantity updated to {new_quantity}.")
+
+    await dialog_manager.start(CartStates.VIEW_CART)
+
+
 async def accept_delivery_address(message: Message, message_input: MessageInput, dialog_manager: DialogManager):
     address = message.text
     print(f'Address: {address}')
@@ -132,6 +155,7 @@ async def get_entered_addr(dialog_manager: DialogManager, **kwargs):
     return {'entered_addr': dialog_manager.current_context().dialog_data["delivery_address"]}
 
 
+# Making order
 async def register_order(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     user_id = dialog_manager.event.from_user.id
     delivery_address = dialog_manager.current_context().dialog_data["delivery_address"]

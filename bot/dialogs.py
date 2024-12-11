@@ -15,9 +15,8 @@ from sqlalchemy import update
 
 from bot import handlers
 from bot.cart import (
-    get_cart_data, on_prev, on_next, on_set_quantity, on_remove_item, remove_item_from_cart_db,
-    set_item_in_cart_quantity_db, accept_delivery_address, get_entered_addr, register_order,
-    confirm_cart_and_send_invoice
+    get_cart_data, on_prev, on_next, on_set_quantity, on_remove_item, accept_delivery_address, get_entered_addr,
+    register_order, confirm_cart_and_send_invoice, receive_quantity
 )
 from bot.categories import get_product_details, get_subcategories, get_categories, get_items
 from bot.db.models import Order, OrderStatusEnum
@@ -249,25 +248,25 @@ cart_dialog = Dialog(
         getter=get_entered_addr,
     ),
     Window(
-        Const("Review your cart and confirm payment:"),
+        Const("Review your cart and confirm payment:"),  # TODO fill with data or remove
         Button(Const("Pay Now"), id="pay_now", on_click=confirm_cart_and_send_invoice),
         state=CartStates.PAYMENT,
     ),
 )
 
 
-def setup_start_handlers(dp: Dispatcher):
+def setup_handlers(dp: Dispatcher):
+    dp.update.middleware(SubscriptionMiddleware())
+
     @dp.message(Command('start'))
     async def start(message: Message, dialog_manager: DialogManager):
         logger.info(message)
         await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
 
+    # payment
     @dp.pre_checkout_query()
     async def pre_checkout_query_handler(pre_checkout_query: PreCheckoutQuery, bot: Bot):
         await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
-
-    dp.update.middleware(SubscriptionMiddleware())
-    dp.include_router(start_dialog)
 
     @dp.message(F.successful_payment)
     async def successful_payment_handler(message: Message, dialog_manager: DialogManager):
@@ -279,6 +278,8 @@ def setup_start_handlers(dp: Dispatcher):
         else:
             new_status = OrderStatusEnum.PAID
             await message.answer("Thank you! Your payment was successful. Your order is now being processed.")
+            # TODO send Excel
+
         async with async_session() as session:
             await session.execute(
                 update(Order)
@@ -286,40 +287,16 @@ def setup_start_handlers(dp: Dispatcher):
                 .values(status=new_status.value)
             )
             await session.commit()
+
         await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
 
-    @dp.message(lambda message: message.text and message.text.isdigit())
+    # Cart edit
+    @dp.message(lambda message: message.text and message.text.isdigit())  # TODO redo into MessageInput
     async def set_quantity_handler(message: Message, dialog_manager: DialogManager):
         if dialog_manager.dialog_data.get("waiting_for_quantity"):
-            dialog_manager.dialog_data["waiting_for_quantity"] = False
+            await receive_quantity(message=message, dialog_manager=dialog_manager)
 
-            new_quantity = int(message.text)
-            cart_items = dialog_manager.dialog_data["cart_items"]
-            current_index = dialog_manager.dialog_data.get("index", 0)
-
-            if new_quantity <= 0:
-                removed_item = cart_items.pop(current_index)
-                await remove_item_from_cart_db(cart_product_id=removed_item.get('id'))
-                await message.answer("Item removed from the cart due to zero or negative quantity.")
-            else:
-                cart_items[current_index]["quantity"] = new_quantity
-                cart_items[current_index]["total"] = cart_items[current_index]["price"] * new_quantity
-                await set_item_in_cart_quantity_db(
-                    cart_product_id=cart_items[current_index].get('id'),
-                    quantity=new_quantity
-                )
-                await message.answer(f"Quantity updated to {new_quantity}.")
-
-            await dialog_manager.start(CartStates.VIEW_CART)
-
-
-def setup_catalog_handlers(dp: Dispatcher):
+    dp.include_router(start_dialog)
     dp.include_router(catalog_dialog)
-
-
-def setup_faq_handlers(dp: Dispatcher):
     dp.include_router(faq_dialog)
-
-
-def setup_cart_handlers(dp: Dispatcher):
     dp.include_router(cart_dialog)

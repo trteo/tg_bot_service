@@ -1,11 +1,11 @@
 from aiogram import types
-from aiogram_dialog import StartMode, DialogManager
+from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Select, Button
 from sqlalchemy import select
 
-from bot.db.models import CartProducts, Product
+from bot.db.models import CartProducts
 from bot.db.session import async_session
-from bot.states import CatalogStates, FAQStates, CartStates
+from bot.states import CatalogStates, FAQStates
 
 
 # Start on-click routs
