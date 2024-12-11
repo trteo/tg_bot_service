@@ -1,13 +1,19 @@
-from aiogram.types import CallbackQuery
+import json
+
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.types import CallbackQuery, Message, LabeledPrice
 from aiogram_dialog import StartMode, DialogManager
+from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
+from loguru import logger
 from sqlalchemy import delete, update
 from sqlalchemy import select
 
-from bot.db.models import CartProducts, Product
+from bot.db.models import CartProducts, Product, Order, OrderProducts, OrderStatusEnum
 from bot.db.session import async_session
 from bot.states import CartStates
 from bot.states import StartStates
+from settings.config import settings
 
 
 async def load_cart(dialog_manager: DialogManager, **kwargs):
@@ -112,3 +118,100 @@ async def on_remove_item(callback: CallbackQuery, button: Button, dialog_manager
 async def on_set_quantity(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
     await callback.message.answer("Send me the new quantity for this item.")
     dialog_manager.dialog_data["waiting_for_quantity"] = True
+
+
+async def accept_delivery_address(message: Message, message_input: MessageInput, dialog_manager: DialogManager):
+    address = message.text
+    print(f'Address: {address}')
+    dialog_manager.current_context().dialog_data["delivery_address"] = address
+    # TODO create order
+    await dialog_manager.switch_to(CartStates.ADDRESS_CONFIRM)
+
+
+async def get_entered_addr(dialog_manager: DialogManager, **kwargs):
+    return {'entered_addr': dialog_manager.current_context().dialog_data["delivery_address"]}
+
+
+async def register_order(callback: CallbackQuery, button: Button, dialog_manager: DialogManager):
+    user_id = dialog_manager.event.from_user.id
+    delivery_address = dialog_manager.current_context().dialog_data["delivery_address"]
+
+    # Create Order
+    async with async_session() as session:
+        order = Order(
+            delivery_address=delivery_address,
+            client_id=user_id,
+            status=OrderStatusEnum.REGISTERED.value,
+        )
+        session.add(order)
+        await session.commit()
+
+    # Create Order Items
+    async with async_session() as session:
+        cart_items = (await session.execute(
+            select(CartProducts, Product)
+            .join(Product, CartProducts.product_id == Product.id)
+            .filter(CartProducts.client_id == user_id)
+        )).all()
+        order_products = [
+            OrderProducts(
+                order_id=order.id,
+                product_id=cart_item.product_id,
+                amount=cart_item.amount,
+                price=product.price,
+            )
+            for cart_item, product in cart_items
+        ]
+
+        session.add_all(order_products)
+        await session.commit()
+
+    # Flush users cart
+        for cart_item, _ in cart_items:
+            await session.delete(cart_item)
+        await session.commit()
+    dialog_manager.dialog_data['created_order_id'] = order.id
+    await dialog_manager.switch_to(CartStates.PAYMENT)
+
+
+async def confirm_cart_and_send_invoice(
+        event: CallbackQuery,
+        button: Button,
+        dialog_manager: DialogManager,
+):
+    chat_id = event.from_user.id
+    order_id = dialog_manager.dialog_data['created_order_id']
+
+    async with async_session() as session:
+        order_items = (await session.execute(
+            select(OrderProducts, Product)
+            .join(Product, OrderProducts.product_id == Product.id)
+            .filter(OrderProducts.id == order_id)
+        )).all()
+
+    # Build cart description and total cost
+    description = "Your cart items:\n"
+    prices = []
+    total_price = 0
+    for ordered_item, item in order_items:
+        item_sun_price = float(item.price) * ordered_item.amount
+        description += f"{item.name} (x{ordered_item.amount}): {item_sun_price} RUB\n"
+        prices.append(LabeledPrice(label=item.name, amount=int(item_sun_price * 100)))  # Telegram uses cents
+        total_price += item_sun_price
+
+    description += f"\nTotal: {total_price} RUB"
+    logger.info(f'prices: {prices}')
+    try:
+        await event.bot.send_invoice(
+            chat_id=chat_id,
+            title="Your Cart Purchase",
+            description=description,
+            payload=json.dumps({'order_id': order_id, 'status': 'success'}),
+            provider_token=settings.PAYMENT_TOKEN.get_secret_value(),
+            currency="RUB",
+            prices=prices,
+            start_parameter="purchase",
+        )
+    except TelegramBadRequest:
+        await event.message.answer("Something went wrong. Try again later")
+        await dialog_manager.switch_to(CartStates.VIEW_CART)

@@ -10,6 +10,7 @@
 ### Для запуска необходимо
 
 * Создать бота
+* Дать боту доступ в [Youkassa](https://yookassa.ru/docs/support/payments/onboarding/integration/cms-module/telegram)
 * Добавить в бота в канал и группу ТГ
 * Добавить id и ссылки на канал и группу в settings/env
 * Прописать конфиг поднятой БД в env (POSTGRES_HOST=gateway.docker.internal если Postgres поднят на устройстве)

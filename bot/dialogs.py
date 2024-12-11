@@ -1,23 +1,30 @@
-from aiogram import Dispatcher
+import json
+
+from aiogram import Dispatcher, Bot
+from aiogram import F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery
-from aiogram_dialog import Dialog, Window, StartMode, DialogManager, LaunchMode
+from aiogram.types import Message, PreCheckoutQuery
+from aiogram_dialog import Dialog, Window, StartMode, DialogManager
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Row, Button, Counter, Group
+from aiogram_dialog.widgets.kbd import Row, Button, Counter
 from aiogram_dialog.widgets.kbd import ScrollingGroup, Select
 from aiogram_dialog.widgets.text import Const
 from aiogram_dialog.widgets.text import Format
 from loguru import logger
-from magic_filter import F
+from sqlalchemy import update
 
 from bot import handlers
-from bot.cart import get_cart_data, on_prev, on_next, on_set_quantity, on_remove_item, remove_item_from_cart_db, \
-    load_cart, set_item_in_cart_quantity_db
+from bot.cart import (
+    get_cart_data, on_prev, on_next, on_set_quantity, on_remove_item, remove_item_from_cart_db,
+    set_item_in_cart_quantity_db, accept_delivery_address, get_entered_addr, register_order,
+    confirm_cart_and_send_invoice
+)
 from bot.categories import get_product_details, get_subcategories, get_categories, get_items
+from bot.db.models import Order, OrderStatusEnum
+from bot.db.session import async_session
 from bot.faq import get_questions, get_answer
 from bot.middleware import SubscriptionMiddleware
 from bot.states import StartStates, CatalogStates, FAQStates, CartStates
-
 
 # Start
 start_dialog = Dialog(
@@ -206,7 +213,8 @@ cart_dialog = Dialog(
             Button(
                 Const("✅ Confirm"),
                 id="confirm_cart",
-                on_click=lambda c, d, m: m.switch_to(CartStates.ENTER_ADDRESS)
+                on_click=lambda c, d, m: m.switch_to(CartStates.ENTER_ADDRESS),
+                when=~F["cart_empty"],
             ),
 
         ),
@@ -215,22 +223,36 @@ cart_dialog = Dialog(
     ),
     Window(
         Const("Enter your delivery address:"),
+        MessageInput(accept_delivery_address),
+        Button(
+            Const("⬅️ Back"),
+            id="back_to_categories",
+            on_click=lambda c, d, m: m.start(CartStates.VIEW_CART),
+        ),
+        state=CartStates.ENTER_ADDRESS,
+    ),
+    Window(
+        Format("Deliver to:\n{entered_addr}?"),
         Row(
             Button(
                 Const("⬅️ Back"),
                 id="back_to_categories",
-                on_click=lambda c, d, m: m.start(StartStates.MAIN, mode=StartMode.RESET_STACK),
+                on_click=lambda c, d, m: m.switch_to(CartStates.ENTER_ADDRESS),
             ),
-            # Button(
-            #     Const("✅ Confirm"),
-            #     id="confirm_cart",
-            #     on_click=lambda c, d, m: m.switch_to(CartStates.PAYMENT)
-            # ),
-
+            Button(
+                Const("✅ Confirm"),
+                id="confirm_cart",
+                on_click=register_order
+            ),
         ),
-        # MessageInput(save_address),
-        state=CartStates.ENTER_ADDRESS,
-    )
+        state=CartStates.ADDRESS_CONFIRM,
+        getter=get_entered_addr,
+    ),
+    Window(
+        Const("Review your cart and confirm payment:"),
+        Button(Const("Pay Now"), id="pay_now", on_click=confirm_cart_and_send_invoice),
+        state=CartStates.PAYMENT,
+    ),
 )
 
 
@@ -240,10 +262,33 @@ def setup_start_handlers(dp: Dispatcher):
         logger.info(message)
         await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
 
+    @dp.pre_checkout_query()
+    async def pre_checkout_query_handler(pre_checkout_query: PreCheckoutQuery, bot: Bot):
+        await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
     dp.update.middleware(SubscriptionMiddleware())
     dp.include_router(start_dialog)
 
-    @dp.message(lambda message: message.text.isdigit())
+    @dp.message(F.successful_payment)
+    async def successful_payment_handler(message: Message, dialog_manager: DialogManager):
+        payload = json.loads(message.successful_payment.invoice_payload)
+
+        if payload.get('status', '') != "success":
+            new_status = OrderStatusEnum.PAY_FAILED
+            await message.answer("Sorry, something went wrong")
+        else:
+            new_status = OrderStatusEnum.PAID
+            await message.answer("Thank you! Your payment was successful. Your order is now being processed.")
+        async with async_session() as session:
+            await session.execute(
+                update(Order)
+                .where(Order.id == payload.get('order_id'))
+                .values(status=new_status.value)
+            )
+            await session.commit()
+        await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
+
+    @dp.message(lambda message: message.text and message.text.isdigit())
     async def set_quantity_handler(message: Message, dialog_manager: DialogManager):
         if dialog_manager.dialog_data.get("waiting_for_quantity"):
             dialog_manager.dialog_data["waiting_for_quantity"] = False

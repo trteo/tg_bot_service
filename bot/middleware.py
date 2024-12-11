@@ -30,6 +30,11 @@ async def create_client_if_not_exists(chat_id):
 class SubscriptionMiddleware(BaseMiddleware):
     async def __call__(self, handler, event: TelegramObject, data: dict):
         user_id = event.event.from_user.id
+
+        # Payment start
+        if event.pre_checkout_query:
+            return await handler(event, data)
+
         message = event.message or event.callback_query.message
 
         bot: Bot = data['bot']

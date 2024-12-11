@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     SUBSCRIBE_CHANNEL_LINK: str = ''
 
     BOT_TOKEN: SecretStr = ''
+    PAYMENT_TOKEN: SecretStr = ''
 
     class Config:
         env_file = Path(BASE_DIR, 'settings', 'env')

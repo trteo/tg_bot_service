@@ -20,4 +20,5 @@ class FAQStates(StatesGroup):
 class CartStates(StatesGroup):
     VIEW_CART = State()
     ENTER_ADDRESS = State()
+    ADDRESS_CONFIRM = State()
     PAYMENT = State()
