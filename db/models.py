@@ -49,6 +49,15 @@ class FAQ(Base):
     answer = Column(Text, nullable=True)
 
 
+class Mailing(Base):
+    __tablename__ = 'mailings'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    message_text = Column(Text, nullable=True)
+    message_image = Column(String(255), nullable=True)
+    sending_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_sent = Column(Boolean)
+
+
 class OrderStatusEnum(PyEnum):
     REGISTERED = "registered"
     PAID = "paid"

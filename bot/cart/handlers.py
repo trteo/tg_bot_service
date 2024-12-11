@@ -1,7 +1,7 @@
 import json
 
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import CallbackQuery, Message, LabeledPrice, FSInputFile, BufferedInputFile
+from aiogram.types import CallbackQuery, Message, LabeledPrice, BufferedInputFile
 from aiogram_dialog import StartMode, DialogManager
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
@@ -9,8 +9,8 @@ from loguru import logger
 from sqlalchemy import delete, update
 from sqlalchemy import select
 
-from bot.db.models import CartProducts, Product, Order, OrderProducts, OrderStatusEnum
-from bot.db.session import async_session
+from db.models import CartProducts, Product, Order, OrderProducts, OrderStatusEnum
+from db.session import async_session
 from bot.states import CartStates
 from bot.states import StartStates
 from settings.config import settings

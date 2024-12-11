@@ -7,8 +7,8 @@ from aiogram_dialog.widgets.kbd import Select
 from loguru import logger
 from sqlalchemy import select
 
-from bot.db.models import FAQ
-from bot.db.session import async_session
+from db.models import FAQ
+from db.session import async_session
 from bot.states import FAQStates
 
 

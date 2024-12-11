@@ -1,13 +1,13 @@
 from aiogram.enums import ContentType
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog.widgets.kbd import Button, Select
 from loguru import logger
 from sqlalchemy import select
 
-from bot.db.models import ProductCategory, Product, CartProducts
-from bot.db.session import async_session
+from db.models import ProductCategory, Product, CartProducts
+from db.session import async_session
 from bot.states import CatalogStates
 
 
@@ -92,6 +92,7 @@ async def get_product_details(dialog_manager: DialogManager, **kwargs) -> dict:
         "description": product.description,
         "price": product.price,
         # "image_url": MediaAttachment(ContentType.PHOTO, url="https://aiogram-dialog.readthedocs.io/en/stable/_images/static_media.png")
+        # "image_url": FSInputFile("/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png")
         # "image_url": "/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"
     }
     logger.info(f'Product details: {res}')

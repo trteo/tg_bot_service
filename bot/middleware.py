@@ -1,14 +1,14 @@
-from aiogram import BaseMiddleware, types
+from aiogram import BaseMiddleware
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
-from aiogram.types import Update, TelegramObject, InlineQuery
+from aiogram.types import TelegramObject, InlineQuery
 from loguru import logger
 from sqlalchemy import select
 
-from bot.db.models import Client
-from bot.db.session import async_session
+from db.models import Client
+from db.session import async_session
 from settings.config import settings
 
 

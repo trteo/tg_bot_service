@@ -1,4 +1,5 @@
 from aiogram.enums import ContentType
+from aiogram.types import FSInputFile
 from aiogram_dialog import Dialog, Window, StartMode
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Row, Button, Counter
@@ -79,6 +80,7 @@ catalog_dialog = Dialog(
         state=CatalogStates.ITEM,
     ),
     Window(
+        # FSInputFile("/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"),
         # StaticMedia(
         #     path="{image_url}",
         #     # path="/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png",
