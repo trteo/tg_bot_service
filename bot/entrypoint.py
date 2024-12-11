@@ -45,7 +45,6 @@ def setup_handlers(dp: Dispatcher):
 
     @dp.message(Command('start'))
     async def start(message: Message, dialog_manager: DialogManager):
-        logger.info(message)
         await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
 
     # payment
