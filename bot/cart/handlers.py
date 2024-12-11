@@ -1,7 +1,7 @@
 import json
 
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import CallbackQuery, Message, LabeledPrice
+from aiogram.types import CallbackQuery, Message, LabeledPrice, FSInputFile, BufferedInputFile
 from aiogram_dialog import StartMode, DialogManager
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
@@ -14,6 +14,9 @@ from bot.db.session import async_session
 from bot.states import CartStates
 from bot.states import StartStates
 from settings.config import settings
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font
+from io import BytesIO
 
 
 async def load_cart(dialog_manager: DialogManager, **kwargs):
@@ -195,22 +198,25 @@ async def register_order(callback: CallbackQuery, button: Button, dialog_manager
             await session.delete(cart_item)
         await session.commit()
     dialog_manager.dialog_data['created_order_id'] = order.id
-    await dialog_manager.switch_to(CartStates.PAYMENT)
+    await confirm_cart_and_send_invoice(
+        event=dialog_manager.event,
+        order_id=order.id,
+        dialog_manager=dialog_manager
+    )
 
 
 async def confirm_cart_and_send_invoice(
         event: CallbackQuery,
-        button: Button,
+        order_id: int,
         dialog_manager: DialogManager,
 ):
+    logger.info(f'Created payment for order with id {order_id}')
     chat_id = event.from_user.id
-    order_id = dialog_manager.dialog_data['created_order_id']
-
     async with async_session() as session:
         order_items = (await session.execute(
             select(OrderProducts, Product)
             .join(Product, OrderProducts.product_id == Product.id)
-            .filter(OrderProducts.id == order_id)
+            .filter(OrderProducts.order_id == order_id)
         )).all()
 
     # Build cart description and total cost
@@ -239,3 +245,79 @@ async def confirm_cart_and_send_invoice(
     except TelegramBadRequest:
         await event.message.answer("Something went wrong. Try again later")
         await dialog_manager.switch_to(CartStates.VIEW_CART)
+
+
+async def __generate_excel_report(order_id: int) -> BytesIO:
+    # Create a new Excel workbook and select the active sheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Order Summary"
+
+    # Define headers
+    headers = ["Name", "Quantity", "Price per Item", "Total Price"]
+    ws.append(headers)  # Add headers to the first row
+
+    # Style headers (bold and centered)
+    for col in ws.iter_cols(min_row=1, max_row=1, min_col=1, max_col=len(headers)):
+        for cell in col:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal="center")
+
+    # Add data rows
+    total_cost = 0
+
+    async with async_session() as session:
+        ordered_products = (await session.execute(
+            select(OrderProducts, Product)
+            .filter(OrderProducts.order_id == order_id)
+            .join(Product, OrderProducts.product_id == Product.id)
+        )).all()
+
+        for ordered_item, item_info in ordered_products:
+            total_price = ordered_item.amount * item_info.price
+            ws.append([item_info.name, ordered_item.amount, item_info.price, total_price])
+            total_cost += total_price
+
+    # Append the total cost row
+    ws.append([])
+    ws.append(["", "", "Total Order Cost", total_cost])
+    total_row = ws.max_row
+
+    # Style the total cost row (bold and centered)
+    for col in ws.iter_cols(min_row=total_row, max_row=total_row, min_col=3, max_col=4):
+        for cell in col:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(horizontal="center")
+
+    # Save the workbook to an in-memory bytes buffer
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)  # Move the pointer to the start of the file
+    return buffer
+
+
+async def handle_payment(message: Message, dialog_manager: DialogManager):
+    payload = json.loads(message.successful_payment.invoice_payload)
+
+    if payload.get('status', '') != "success":
+        new_status = OrderStatusEnum.PAY_FAILED
+        await message.answer("Sorry, something went wrong")
+    else:
+        new_status = OrderStatusEnum.PAID
+        await message.answer(
+            "Thank you! Your payment was successful. Your order is now being processed"
+        )
+
+        excel_buffer = await __generate_excel_report(order_id=payload.get('order_id'))
+        file = BufferedInputFile(excel_buffer.read(), filename="order_summary.xlsx")
+        await message.answer_document(file, caption="Here is your order summary")
+
+    async with async_session() as session:
+        await session.execute(
+            update(Order)
+            .where(Order.id == payload.get('order_id'))
+            .values(status=new_status.value)
+        )
+        await session.commit()
+
+    await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)

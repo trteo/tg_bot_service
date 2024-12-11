@@ -1,8 +1,11 @@
+from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Select
 from sqlalchemy import select
 
 from bot.db.models import FAQ
 from bot.db.session import async_session
+from bot.states import FAQStates
 
 
 def get_striped_sentence(sentence: str, max_len: int = 32) -> str:
@@ -40,8 +43,18 @@ async def get_answer(dialog_manager: DialogManager, **kwargs):
 
     if faq_db_obj:
         response = f"""Question: {faq_db_obj.question}
-        
+
         Answer: {faq_db_obj.answer}
         """
 
     return {"ANSWER": response}
+
+
+async def on_question_selected(
+        event: CallbackQuery,
+        widget: Select,
+        dialog_manager: DialogManager,
+        selected: str
+):
+    dialog_manager.current_context().dialog_data["question_id"] = selected
+    await dialog_manager.switch_to(FAQStates.ANSWER)

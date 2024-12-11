@@ -5,7 +5,7 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram_dialog.setup import setup_dialogs
 
-from bot.dialogs import setup_handlers
+from bot.entrypoint import setup_handlers
 from settings.config import settings
 
 logging.basicConfig(level=logging.INFO)
