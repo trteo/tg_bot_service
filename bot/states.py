@@ -15,3 +15,9 @@ class StartStates(StatesGroup):
 class FAQStates(StatesGroup):
     QUESTION = State()
     ANSWER = State()
+
+
+class CartStates(StatesGroup):
+    VIEW_CART = State()
+    ENTER_ADDRESS = State()
+    PAYMENT = State()

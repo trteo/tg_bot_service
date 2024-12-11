@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from bot.db.models import CartProducts, Product
 from bot.db.session import async_session
-from bot.states import CatalogStates, FAQStates
+from bot.states import CatalogStates, FAQStates, CartStates
 
 
 # Start on-click routs
@@ -102,4 +102,4 @@ async def on_add_to_cart(
             )
 
     await event.answer()
-    await dialog_manager.switch_to(CatalogStates.ITEM)
+    await dialog_manager.switch_to(CatalogStates.ITEM)  # TODO redo to start with passing context
