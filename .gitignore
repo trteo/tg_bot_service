@@ -162,3 +162,5 @@ cython_debug/
 .idea/
 .venv/
 /.python-version
+/tmp/
+/settings/env

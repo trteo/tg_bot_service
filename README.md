@@ -1,7 +1,30 @@
 # bottec tg bot
 
-### Docker run
+### Env
+
+Переменные окружения берутся из settings/env
+
+Пример заполненных значений хранится в settings/env.example (все кроме Токена бота)
+
+
+### Для запуска необходимо
+
+* Создать бота
+* Дать боту доступ в [Youkassa](https://yookassa.ru/docs/support/payments/onboarding/integration/cms-module/telegram)
+* Добавить в бота в канал и группу ТГ
+* Добавить id и ссылки на канал и группу в settings/env
+* Прописать конфиг поднятой БД в env (POSTGRES_HOST=gateway.docker.internal если Postgres поднят на устройстве)
+либр POSTGRES_HOST=db, если запуск происходит через docker compose 
+* Прописать в конфиг токены YouKassa и бота
+* Заполнить БД (скрипт запускается при старте админки)
+* Запустить
+
+Тестовая карта для ЮКассы - 5555 5555 5555 4444
+Дата любая, но еще не наступившая. CVС любой
+
+### Запуск докер контейнера
 ```commandline
 docker build --progress=plain --no-cache -t bot . && \
 docker run -it bot
 ```
+
