@@ -35,8 +35,8 @@ async def load_cart(dialog_manager: DialogManager, **kwargs):
             "id": cart.id,
             "name": product.name,
             "quantity": cart.amount,
-            "price": product.price,
-            "total": product.price * cart.amount,
+            "price": float(product.price),
+            "total": float(product.price * cart.amount),
         }
         for cart, product in items_in_cart
     ]
@@ -48,6 +48,7 @@ async def load_cart(dialog_manager: DialogManager, **kwargs):
 
 # Data getter to provide current cart items
 async def get_cart_data(dialog_manager: DialogManager, **kwargs):
+    logger.info('Getting cart data')
     if 'cart_items' not in dialog_manager.dialog_data:
         await load_cart(dialog_manager)
 
@@ -57,7 +58,11 @@ async def get_cart_data(dialog_manager: DialogManager, **kwargs):
 
     index = dialog_manager.dialog_data.get("index", 0)
     item = cart_items[index]
-    return {"item": item, "index": index + 1, "total_items": len(cart_items), 'cart_empty': False}
+
+    res = {"item": item, "index": index + 1, "total_items": len(cart_items), 'cart_empty': False}
+    logger.info(f'Cart data: {res}')
+
+    return res
 
 
 # Navigation callbacks handlers

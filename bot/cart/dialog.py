@@ -20,7 +20,7 @@ cart_dialog = Dialog(
             'Cart is empty now.',
             when=F["cart_empty"],
         ),
-        # StaticMedia(
+        # StaticMedia(  # TODO use image as in catalog
         #     path="/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png",
         #     type=ContentType.PHOTO,
         # ),
