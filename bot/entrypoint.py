@@ -5,6 +5,7 @@ from aiogram.types import Message, PreCheckoutQuery, InlineQuery
 from aiogram_dialog import Dialog, Window, StartMode, DialogManager
 from aiogram_dialog.widgets.kbd import Row, Button
 from aiogram_dialog.widgets.text import Const
+from loguru import logger
 
 from bot.cart.dialog import cart_dialog
 from bot.cart.handlers import receive_quantity, handle_payment
@@ -45,7 +46,8 @@ def setup_handlers(dp: Dispatcher):
 
     @dp.message(Command('start'))
     async def start(message: Message, dialog_manager: DialogManager):
-        await dialog_manager.start(StartStates.MAIN, mode=StartMode.RESET_STACK)
+        logger.info('Start got')
+        await dialog_manager.start(StartStates.MAIN, mode=StartMode.NEW_STACK)
 
     # payment
     @dp.pre_checkout_query()

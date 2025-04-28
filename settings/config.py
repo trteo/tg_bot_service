@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = ''
     POSTGRES_PORT: str = ''
 
+    REDIS_HOST: str = ''
+    REDIS_PORT: int = 6379
+
     SUBSCRIBE_GROUP_ID: str = ''
     SUBSCRIBE_CHANNEL_ID: str = ''
 

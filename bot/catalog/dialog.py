@@ -79,13 +79,11 @@ catalog_dialog = Dialog(
         getter=get_items,
         state=CatalogStates.ITEM,
     ),
-    Window(
-        # FSInputFile("/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"),
-        # StaticMedia(
-        #     path="{image_url}",
-        #     # path="/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png",
-        #     type=ContentType.PHOTO,
-        # ),
+    Window(  # TODO use this window instead of prev, make ut scrollable as in cart
+        StaticMedia(
+            path=Format("{image_url}"),
+            type=ContentType.PHOTO,
+        ),
         # DynamicMedia("image_url"),
         Format("🔹 Name: {name}"),
         Format("📖 Description: {description}"),

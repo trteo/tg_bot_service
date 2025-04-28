@@ -1,3 +1,5 @@
+import random
+
 from aiogram.enums import ContentType
 from aiogram.types import CallbackQuery, FSInputFile
 from aiogram_dialog import DialogManager
@@ -87,13 +89,12 @@ async def get_product_by_id(product_id: str) -> Product:
 async def get_product_details(dialog_manager: DialogManager, **kwargs) -> dict:
     product_id = dialog_manager.current_context().dialog_data.get("product_id")
     product = await get_product_by_id(product_id)
+
     res = {
         "name": product.name,
         "description": product.description,
         "price": product.price,
-        # "image_url": MediaAttachment(ContentType.PHOTO, url="https://aiogram-dialog.readthedocs.io/en/stable/_images/static_media.png")
-        # "image_url": FSInputFile("/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png")
-        # "image_url": "/Users/fedortropin/Documents/work/intevus/bottec/teo/bottec/tg_bot_service/uiyt.png"
+        "image_url": product.image
     }
     logger.info(f'Product details: {res}')
     return res

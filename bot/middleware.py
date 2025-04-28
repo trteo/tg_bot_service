@@ -35,7 +35,7 @@ class SubscriptionMiddleware(BaseMiddleware):
         if event.pre_checkout_query or isinstance(event.event, InlineQuery):
             return await handler(event, data)
 
-        message = event.message or event.callback_query.message
+        message = self.__message_extractor(event=event)
 
         bot: Bot = data['bot']
 
@@ -66,3 +66,11 @@ class SubscriptionMiddleware(BaseMiddleware):
             )
             return
         return await handler(event, data)
+
+    @staticmethod
+    def __message_extractor(event: TelegramObject):
+        if event.message:
+            return event.message
+
+        if event.callback_query:
+            return event.callback_query.message
