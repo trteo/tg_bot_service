@@ -8,8 +8,7 @@ COPY . .
 
 RUN ls -al
 
-RUN pip install -r requirements.txt
-RUN #pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the 'ls' command during the build stage
 

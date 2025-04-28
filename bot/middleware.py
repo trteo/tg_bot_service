@@ -74,3 +74,4 @@ class SubscriptionMiddleware(BaseMiddleware):
 
         if event.callback_query:
             return event.callback_query.message
+          
